@@ -176,6 +176,22 @@ static int label_idx(uint32_t offset, bool create)
 }
 
 
+static uint32_t fxn_offsets[0x512];
+static int num_fxn_offsets;
+
+static int fxn_idx(uint32_t offset, bool create)
+{
+	int i;
+	for (i = 0; i < num_fxn_offsets; i++)
+		if (offset == fxn_offsets[i])
+			return i;
+	if (!create)
+		return -1;
+	fxn_offsets[i] = offset;
+	num_fxn_offsets = i+1;
+	return i;
+}
+
 static struct {
 	uint32_t offset;
 	uint32_t num_jump_labels;
@@ -247,7 +263,7 @@ static void disasm(uint32_t *buf, int sizedwords)
 			label_idx(i + instr->br.ioff, true);
 			break;
 		case OPC_CALL:
-			label_idx(instr->call.uoff, true);
+			fxn_idx(instr->call.uoff, true);
 			break;
 		default:
 			break;
@@ -256,14 +272,15 @@ static void disasm(uint32_t *buf, int sizedwords)
 
 	/* print instructions: */
 	for (i = 0; i < jmptbl_start; i++) {
-		int idx, jump_label_idx;
+		int lidx, fidx, jump_label_idx;
 		afuc_instr *instr = (void *)&instrs[i];
 		afuc_opc opc;
 		bool flush;
 
 		afuc_get_opc(instr, &opc, &flush);
 
-		idx = label_idx(i, false);
+		lidx = label_idx(i, false);
+		fidx = fxn_idx(i, false);
 		jump_label_idx = get_jump_table_entry(i);
 
 		if (jump_label_idx >= 0) {
@@ -281,8 +298,13 @@ static void disasm(uint32_t *buf, int sizedwords)
 			}
 		}
 
-		if (idx >= 0) {
-			printlbl(" l%02d", idx);
+		if (fidx >= 0) {
+			printlbl("f%02d", fidx);
+			printf(":\n");
+		}
+
+		if (lidx >= 0) {
+			printlbl(" l%02d", lidx);
 			printf(": ");
 		} else {
 			printf("      ");
@@ -459,7 +481,7 @@ static void disasm(uint32_t *buf, int sizedwords)
 		}
 		case OPC_CALL:
 			printf("call #");
-			printlbl("l%02d", label_idx(instr->call.uoff, false));
+			printlbl("f%02d", fxn_idx(instr->call.uoff, false));
 			if (verbose) {
 				printf(" (%04x)", instr->call.uoff);
 				if (instr->br.bit_or_imm || instr->br.src) {
