@@ -78,6 +78,9 @@ extern YYSTYPE yylval;
 "(f)"                             return TOKEN(T_F);
 
 ","                               return ',';
+"["                               return '[';
+"]"                               return ']';
+"+"                               return '+';
 
 .                                 fprintf(stderr, "error at line %d: Unknown token: %s\n", yyget_lineno(), yytext); yyterminate();
 

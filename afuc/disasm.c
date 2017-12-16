@@ -423,9 +423,9 @@ static void disasm(uint32_t *buf, int sizedwords)
 			}
 
 			print_src(instr->control.src1);
-			printf(", ");
+			printf(", [");
 			print_src(instr->control.src2);
-			printf(", 0x%x, 0x%03x", instr->control.flags, instr->control.uimm);
+			printf(" + 0x%03x], 0x%x", instr->control.uimm, instr->control.flags);
 			break;
 		}
 		case OPC_BRNEI:

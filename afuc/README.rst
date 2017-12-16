@@ -153,8 +153,11 @@ These seem to read/write config state in other parts of CP.  In at
 least some cases I expect these map to CP registers (but possibly
 not directly??)
 
-- ``cread``
-- ``cwrite``
+- ``cread $dst, [$off + addr], flags``
+- ``cwrite $src, [$off + addr], flags``
+
+In cases where no offset is needed, ``$00`` is frequently used as
+the offset.
 
 For example, the following sequences sets::
 
@@ -174,9 +177,9 @@ For example, the following sequences sets::
   shl $05, $05, 0x0002
 
   ; update CP_IBn_BASE_LO/HI/BUFSIZE:
-  cwrite $02, $05, 0x8, 0x0b0
-  cwrite $03, $05, 0x8, 0x0b1
-  cwrite $04, $05, 0x8, 0x0b2
+  cwrite $02, [$05 + 0x0b0], 0x8
+  cwrite $03, [$05 + 0x0b1], 0x8
+  cwrite $04, [$05 + 0x0b2], 0x8
 
 
 
@@ -217,8 +220,8 @@ like::
 
   mov $0c, CP_SCRATCH_REG[0x7]
   mov $02, 0x789a   ; value
-  cwrite $0c, $00, 0x8, 0x010
-  cwrite $02, $00, 0x8, 0x011
+  cwrite $0c, [$00 + 0x010], 0x8
+  cwrite $02, [$00 + 0x011], 0x8
 
 Like with the ``$addr``/``$data`` approach, the destination register address
 increments on each write.
@@ -279,15 +282,15 @@ An example from ``CP_DRAW_INDIRECT`` packet handler::
 
   mov $07, 0x0004  ; # of dwords to read from draw-indirect buffer
   ; load address of indirect buffer from cmdstream:
-  cwrite $data, $00, 0x8, 0x0b8
-  cwrite $data, $00, 0x8, 0x0b9
+  cwrite $data, [$00 + 0x0b8], 0x8
+  cwrite $data, [$00 + 0x0b9], 0x8
   ; set # of dwords to read:
-  cwrite $07, $00, 0x8, 0x0ba
+  cwrite $07, [$00 + 0x0ba], 0x8
   ...
   ; read parameters from draw-indirect buffer:
   mov $09, $addr
   mov $07, $addr
-  cread $12, $00, 0x8, 0x040
+  cread $12, [$00 + 0x040], 0x8
   ; the start parameter gets written into MEQ, which ME writes
   ; to VFD_INDEX_OFFSET register:
   mov $data, $addr

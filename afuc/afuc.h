@@ -76,16 +76,13 @@ typedef enum {
 	 *     breq $04, 0x0, #l23 (#69, 04a2)
 	 *     and $05, $18, 0x0003
 	 *     shl $05, $05, 0x0002
-	 *     controla $02, $05, 0x8, 0x0b0
-	 *     controla $03, $05, 0x8, 0x0b1
-	 *     controla $04, $05, 0x8, 0x0b2
+	 *     cwrite $02, [$05 + 0x0b0], 0x8
+	 *     cwrite $03, [$05 + 0x0b1], 0x8
+	 *     cwrite $04, [$05 + 0x0b2], 0x8
 	 *
 	 * Note that CP_IB1/2_BASE_LO/HI/BUFSZ in 0x0b1f->0xb21 (IB1) and
 	 * 0x0b22->0x0b24 (IB2).  Presumably $05 ends up w/ different value
 	 * for RB->IB1 vs IB1->IB2.
-	 *
-	 * Note that controlc seems to be a 'read', controla and controlb
-	 * seem to write.
 	 */
 	OPC_CWRITE = 0x15,
 	OPC_CREAD  = 0x16,
@@ -125,18 +122,18 @@ typedef union PACKED {
 	struct PACKED {
 		uint32_t uimm    : 12;
 		uint32_t flags   : 4;
-		uint32_t src1    : 5;
-		uint32_t src2    : 5;
+		uint32_t src1    : 5;     /* dst (cread) or src (cwrite) register */
+		uint32_t src2    : 5;     /* read or write address is src2+uimm */
 		uint32_t hdr     : 6;
 	} control;
 	struct PACKED {
-		int32_t  ioff    : 16;     /* relative offset */
+		int32_t  ioff    : 16;    /* relative offset */
 		uint32_t bit_or_imm : 5;
 		uint32_t src     : 5;
 		uint32_t hdr     : 6;
 	} br;
 	struct PACKED {
-		uint32_t uoff    : 26;     /* absolute (unsigned) offset */
+		uint32_t uoff    : 26;    /* absolute (unsigned) offset */
 		uint32_t hdr     : 6;
 	} call;
 	struct PACKED {
