@@ -297,3 +297,19 @@ An example from ``CP_DRAW_INDIRECT`` packet handler::
   ; to VFD_INDEX_OFFSET register:
   mov $data, $addr
 
+
+A6XX NOTES
+==========
+
+The ``$14`` register holds global flags set by:
+
+  CP_SKIP_IB2_ENABLE_LOCAL - b8
+  CP_SKIP_IB2_ENABLE_GLOBAL - b9
+  CP_SET_MARKER
+    MODE=GMEM - sets b15
+    MODE=BLIT2D - clears b15, b12, b7
+  CP_SET_MODE - b29+b30
+  CP_SET_VISIBILITY_OVERRIDE - b11, b21, b30?
+  CP_SET_DRAW_STATE - checks b29+b30
+
+  CP_COND_REG_EXEC - checks b10, which should be predicate flag?
