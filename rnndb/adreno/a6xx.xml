@@ -3154,10 +3154,12 @@ to upconvert to 32b float internally?
 	<reg32 offset="0xb984" name="HLSQ_CONTROL_3_REG">
 		<!-- register loaded with position (bary.f) -->
 		<bitfield name="BARY_IJ_PIXEL" low="0" high="7" type="a3xx_regid"/>
+<bitfield name="SOMECOORD" low="8" high="15" type="a3xx_regid"/>
 		<bitfield name="BARY_IJ_CENTROID" low="16" high="23" type="a3xx_regid"/>
 	</reg32>
 	<reg32 offset="0xb985" name="HLSQ_CONTROL_4_REG">
 		<bitfield name="BARY_IJ_PIXEL_PERSAMP" low="0" high="7" type="a3xx_regid"/>
+<bitfield name="SOMECOORD_PERSAMP" low="8" high="15" type="a3xx_regid"/>
 		<bitfield name="XYCOORDREGID" low="16" high="23" type="a3xx_regid"/>
 		<bitfield name="ZWCOORDREGID" low="24" high="31" type="a3xx_regid"/>
 	</reg32>
