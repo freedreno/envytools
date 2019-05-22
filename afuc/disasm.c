@@ -382,9 +382,6 @@ static void disasm(uint32_t *buf, int sizedwords)
 			printf("  ");
 		}
 
-		if (flush)
-			printf("(f)");
-
 		switch (opc) {
 		case OPC_NOP:
 
@@ -392,6 +389,8 @@ static void disasm(uint32_t *buf, int sizedwords)
 				printerr("[%08x]", instrs[i]);
 				printf("  ; ");
 			}
+			if (flush)
+				printf("(f)");
 			printf("nop");
 			print_gpu_reg(instrs[i]);
 
@@ -417,6 +416,9 @@ static void disasm(uint32_t *buf, int sizedwords)
 			if (opc == OPC_NOT)
 				src1 = false;
 
+			if (flush)
+				printf("(f)");
+
 			print_alu_name(opc, instrs[i]);
 			print_dst(instr->alui.dst);
 			printf(", ");
@@ -436,6 +438,8 @@ static void disasm(uint32_t *buf, int sizedwords)
 			break;
 		}
 		case OPC_MOVI: {
+			if (flush)
+				printf("(f)");
 			printf("mov ");
 			print_dst(instr->movi.dst);
 			printf(", 0x%04x", instr->movi.uimm);
@@ -480,6 +484,12 @@ static void disasm(uint32_t *buf, int sizedwords)
 			if (instr->alu.alu == OPC_NOT)
 				src1 = false;
 
+			if (instr->alu.pad)
+				printf("[%08x]  ; ", instrs[i]);
+
+			if (flush)
+				printf("(f)");
+
 			/* special case mnemonics:
 			 *   reading $00 seems to always yield zero, and so:
 			 *      or $dst, $00, $src -> mov $dst, $src
@@ -514,6 +524,9 @@ static void disasm(uint32_t *buf, int sizedwords)
 		case OPC_CWRITE:
 		case OPC_CREAD: {
 
+			if (flush)
+				printf("(f)");
+
 			if (opc == OPC_CWRITE) {
 				printf("cwrite ");
 			} else if (opc == OPC_CREAD) {
@@ -533,6 +546,8 @@ static void disasm(uint32_t *buf, int sizedwords)
 		case OPC_BRNEB:
 		case OPC_BREQB: {
 			unsigned off = i + instr->br.ioff;
+
+			assert(!flush);
 
 			/* Since $00 reads back zero, it can be used as src for
 			 * unconditional branches.  (This only really makes sense
@@ -580,6 +595,7 @@ static void disasm(uint32_t *buf, int sizedwords)
 			break;
 		}
 		case OPC_CALL:
+			assert(!flush);
 			printf("call #");
 			printlbl("%s", fxn_name(instr->call.uoff));
 			if (verbose) {
@@ -591,9 +607,15 @@ static void disasm(uint32_t *buf, int sizedwords)
 			}
 			break;
 		case OPC_RET:
+			assert(!flush);
+			if (instr->pad)
+				printf("[%08x]  ; ", instrs[i]);
 			printf("ret");
 			break;
 		case OPC_WIN:
+			assert(!flush);
+			if (instr->waitin.pad)
+				printf("[%08x]  ; ", instrs[i]);
 			printf("waitin");
 			if (verbose && instr->waitin.pad)
 				printerr("  (pad=%x)", instr->waitin.pad);
