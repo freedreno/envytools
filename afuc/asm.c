@@ -183,6 +183,15 @@ static void emit_instructions(int outfd)
 				instr.movi.dst = ai->dst;
 				instr.movi.uimm = ai->immed;
 				instr.movi.shift = ai->shift;
+			} else if (ai->label) {
+				/* mov w/ a label is just an alias for an immediate, this
+				 * is useful to load the address of a constant table into
+				 * a register:
+				 */
+				opc = OPC_MOVI;
+				instr.movi.dst = ai->dst;
+				instr.movi.uimm = resolve_label(ai->label);
+				instr.movi.shift = ai->shift;
 			} else {
 				/* encode as: or $dst, $00, $src */
 				opc = OPC_ALU;

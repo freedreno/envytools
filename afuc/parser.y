@@ -198,6 +198,10 @@ alu_mov_instr:     T_OP_MOV reg ',' reg        { new_instr($1); dst($2); src1($4
                        new_instr($1); dst($2); immed($4); shift($6);
 }
 |                  T_OP_MOV reg ',' immediate  { new_instr($1); dst($2); immed($4); }
+|                  T_OP_MOV reg ',' T_LABEL_REF T_LSHIFT immediate {
+                       new_instr($1); dst($2); label($4); shift($6);
+}
+|                  T_OP_MOV reg ',' T_LABEL_REF { new_instr($1); dst($2); label($4); }
 
 alu_2src_op:       T_OP_ADD       { new_instr($1); }
 |                  T_OP_ADDHI     { new_instr($1); }
