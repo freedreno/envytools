@@ -86,6 +86,7 @@ typedef enum {
 	 */
 	OPC_CWRITE = 0x15,
 	OPC_CREAD  = 0x16,
+	OPC_OP17   = 0x17,  /* placeholder, seems a variant of cread?? */
 
 	OPC_BRNEI  = 0x30,  /* relative branch (if $src != immed) */
 	OPC_BREQI  = 0x31,  /* relative branch (if $src == immed) */

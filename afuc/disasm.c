@@ -393,6 +393,7 @@ static void disasm(uint32_t *buf, int sizedwords)
 				printf("  ; ");
 			}
 			printf("nop");
+			print_gpu_reg(instrs[i]);
 
 			break;
 		case OPC_ADD:
@@ -509,6 +510,7 @@ static void disasm(uint32_t *buf, int sizedwords)
 			}
 			break;
 		}
+		case OPC_OP17:
 		case OPC_CWRITE:
 		case OPC_CREAD: {
 
@@ -516,6 +518,8 @@ static void disasm(uint32_t *buf, int sizedwords)
 				printf("cwrite ");
 			} else if (opc == OPC_CREAD) {
 				printf("cread ");
+			} else if (opc == 0x17) {
+				printf("op17 ");
 			}
 
 			print_src(instr->control.src1);

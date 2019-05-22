@@ -193,10 +193,13 @@ static void emit_instructions(int outfd)
 			break;
 		case T_OP_CWRITE:
 		case T_OP_CREAD:
+		case T_OP_OP17:
 			if (ai->tok == T_OP_CWRITE) {
 				opc = OPC_CWRITE;
 			} else if (ai->tok == T_OP_CREAD) {
 				opc = OPC_CREAD;
+			} else if (ai->tok == T_OP_OP17) {
+				opc = OPC_OP17;
 			}
 			instr.control.src1 = ai->src1;
 			instr.control.src2 = ai->src2;
@@ -281,10 +284,8 @@ static void emit_jumptable(int outfd)
 static void usage(void)
 {
 	fprintf(stderr, "Usage:\n"
-			"\tdisasm [-g GPUVER] [-v] [-c] filename.asm\n"
+			"\tasm [-g GPUVER] filename.asm filename.fw\n"
 			"\t\t-g - specify GPU version (5, etc)\n"
-			"\t\t-c - use colors\n"
-			"\t\t-v - verbose output\n"
 		);
 	exit(2);
 }
@@ -332,10 +333,15 @@ int main(int argc, char **argv)
 	if (!gpuver) {
 		if (strstr(file, "a5")) {
 			gpuver = 5;
+		} else if (strstr(file, "a6")) {
+			gpuver = 6;
 		}
 	}
 
 	switch (gpuver) {
+	case 6:
+		name = "A6XX";
+		break;
 	case 5:
 		name = "A5XX";
 		break;

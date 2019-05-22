@@ -154,6 +154,7 @@ static void print_token(FILE *file, int type, YYSTYPE value)
 %token <tok> T_OP_MOV
 %token <tok> T_OP_CWRITE
 %token <tok> T_OP_CREAD
+%token <tok> T_OP_OP17
 %token <tok> T_OP_BRNE
 %token <tok> T_OP_BREQ
 %token <tok> T_OP_RET
@@ -223,6 +224,7 @@ alu_instr:         alu_2src_instr
 
 config_op:         T_OP_CWRITE    { new_instr($1); }
 |                  T_OP_CREAD     { new_instr($1); }
+|                  T_OP_OP17      { new_instr($1); }
 
 config_instr:      config_op reg ',' '[' reg '+' immediate ']' ',' immediate {
                        src1($2); src2($5); immed($7); bit($10);

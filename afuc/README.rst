@@ -9,7 +9,7 @@ Adreno Five Microcode
 Introduction
 ============
 
-Adreno GPUs use two micro-controllers to parse the command-stream,
+Adreno GPUs prior to 6xx use two micro-controllers to parse the command-stream,
 setup the hardware for draws (or compute jobs), and do various GPU
 housekeeping.  They are relatively simple (basically glorified
 register writers) and basically all their state is in a collection
@@ -34,6 +34,8 @@ For lack of a better name, this new instruction set is called
 "Adreno Five MicroCode" or "afuc".  (No idea what Qualcomm calls
 it internally.
 
+With Adreno 6xx, the separate PF and ME are replaced with a single
+SQE microcontroller using the same instruction set as 5xx.
 
 .. _afuc-overview:
 

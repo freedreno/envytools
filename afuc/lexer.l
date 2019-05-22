@@ -68,6 +68,7 @@ extern YYSTYPE yylval;
 "mov"                             return TOKEN(T_OP_MOV);
 "cwrite"                          return TOKEN(T_OP_CWRITE);
 "cread"                           return TOKEN(T_OP_CREAD);
+"op17"                            return TOKEN(T_OP_OP17);
 "brne"                            return TOKEN(T_OP_BRNE);
 "breq"                            return TOKEN(T_OP_BREQ);
 "ret"                             return TOKEN(T_OP_RET);
