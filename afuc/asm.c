@@ -131,8 +131,9 @@ static void emit_instructions(int outfd)
 		 * (ie. offset of jmptbl)
 		 */
 		if (i == 1) {
-			write(outfd, &num_instructions, 4);
-			continue;
+			assert(ai->is_literal);
+			ai->literal &= ~0xffff;
+			ai->literal |= num_instructions;
 		}
 
 		if (ai->is_literal) {
