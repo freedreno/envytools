@@ -77,6 +77,11 @@ struct state {
 
 #define PACKED __attribute__((__packed__))
 
+/* macro to declare unknown range of section, start/end are byte offsets
+ * in hex, without the "0x"
+ */
+#define UNKNOWN(start, end) uint32_t unk_ ## start ## _ ## end [(4 + 0x ## end - 0x ## start) / 4]
+
 #define OFF(field) do {                                               \
 		if (dump_offsets)                                             \
 			printf("%08x: ", (uint32_t)((char *)&field - state->buf));\
@@ -172,18 +177,18 @@ static void dump_unknown(struct state *state, void *buf, unsigned start, unsigne
 
 struct PACKED header {
 	uint32_t version;   /* I guess, always b10bcace ? */
-	uint32_t unk_0004_0014[5];
+	UNKNOWN(0004, 0014);
 	uint32_t size;
 	uint32_t size2;     /* just to be sure? */
-	uint32_t unk_0020_0020[1];
+	UNKNOWN(0020, 0020);
 	uint32_t chksum;    /* I guess?  Small changes seem to result in big diffs here */
-	uint32_t unk_0028_0050[11];
+	UNKNOWN(0028, 0050);
 	uint32_t fs_info;   /* offset of FS shader_info section */
-	uint32_t unk_0058_0090[15];
+	UNKNOWN(0058, 0090);
 	uint32_t vs_info;   /* offset of VS shader_info section */
-	uint32_t unk_0098_00b0[7];
+	UNKNOWN(0098, 00b0);
 	uint32_t vs_info2;  /* offset of VS shader_info section (again?) */
-	uint32_t unk_00b8_0110[23];
+	UNKNOWN(00b8, 0110);
 	uint32_t bs_info;   /* offset of binning shader_info section */
 };
 
@@ -228,7 +233,7 @@ static void decode_shader_entry_point(struct state *state,
 }
 
 struct PACKED shader_config {
-	uint32_t unk_0000_0008[3];
+	UNKNOWN(0000, 0008);
 	uint32_t full_regs;
 	uint32_t half_regs;
 };
@@ -250,7 +255,7 @@ static void decode_shader_config(struct state *state, struct shader_config *cfg)
 struct PACKED shader_io_block {
 	/* name of TBD length followed by unknown.. 42 dwords total */
 	char name[20];
-	uint32_t unk_0014_00a4[37];
+	UNKNOWN(0014, 00a4);
 };
 
 static void decode_shader_io_block(struct state *state,
@@ -262,9 +267,9 @@ static void decode_shader_io_block(struct state *state,
 
 struct PACKED shader_constant_block {
 	uint32_t value;
-	uint32_t unk_0004_000c[3];
+	UNKNOWN(0004, 000c);
 	uint32_t regid;
-	uint32_t unk_0014_0024[5];
+	UNKNOWN(0014, 0024);
 };
 
 static void decode_shader_constant_block(struct state *state,
@@ -294,7 +299,7 @@ struct PACKED shader_descriptor_block {
 	uint32_t offset;    /* offset (relative to start of shader_info block) */
 	uint32_t size;      /* size in bytes */
 	uint32_t count;     /* number of records */
-	uint32_t unk_0010_0010[1];
+	UNKNOWN(0010, 0010);
 };
 
 static void decode_shader_descriptor_block(struct state *state,
