@@ -175,43 +175,53 @@ static void dump_unknown(struct state *state, void *buf, unsigned start, unsigne
 	}
 }
 
+struct PACKED section {
+	uint32_t type;
+	uint32_t offset;
+	UNKNOWN(0008, 001c);
+};
+
+static void decode_section(struct state *state, struct section *sec)
+{
+	X(sec, type);
+	O(sec, offset, shader_info);
+	U(sec, 0008, 001c);
+}
+
 struct PACKED header {
 	uint32_t version;   /* I guess, always b10bcace ? */
-	UNKNOWN(0004, 0014);
+	UNKNOWN(0004, 0004);
+	uint32_t num_sects;
+	uint32_t sect_off;  /* looks like offset of first section?? */
+	UNKNOWN(0010, 0014);
 	uint32_t size;
 	uint32_t size2;     /* just to be sure? */
 	UNKNOWN(0020, 0020);
 	uint32_t chksum;    /* I guess?  Small changes seem to result in big diffs here */
-	UNKNOWN(0028, 0050);
-	uint32_t fs_info;   /* offset of FS shader_info section */
-	UNKNOWN(0058, 0090);
-	uint32_t vs_info;   /* offset of VS shader_info section */
-	UNKNOWN(0098, 00b0);
-	uint32_t vs_info2;  /* offset of VS shader_info section (again?) */
-	UNKNOWN(00b8, 0110);
-	uint32_t bs_info;   /* offset of binning shader_info section */
+	UNKNOWN(0028, 004c);
 };
 
 static void decode_header(struct state *state, struct header *hdr)
 {
 	X(hdr, version);
-	U(hdr, 0004, 0014);
+	U(hdr, 0004, 0004);
+	D(hdr, num_sects);
+	X(hdr, sect_off);
+	U(hdr, 0010, 0014);
 	X(hdr, size);
 	X(hdr, size2);
 	U(hdr, 0020, 0020);
 	X(hdr, chksum);
-	U(hdr, 0028, 0050);
-	state->shader_type = "FRAG";
-	O(hdr, fs_info, shader_info);
-	U(hdr, 0058, 0090);
-	state->shader_type = "VERT";
-	O(hdr, vs_info, shader_info);
-	U(hdr, 0098, 00b0);
-	assert(hdr->vs_info == hdr->vs_info2);  /* not sure what this if it is ever different */
-	X(hdr, vs_info2);
-	U(hdr, 00b8, 0110);
-	state->shader_type = "BVERT";
-	O(hdr, bs_info, shader_info);
+	U(hdr, 0028, 004c);
+
+	struct section *sections = ((void *)hdr) + hdr->sect_off;
+	for (unsigned i = 0; i < hdr->num_sects; i++) {
+		printf("%ssection %u:\n", tab(state->lvl), i);
+		state->lvl++;
+		decode_section(state, &sections[i]);
+		printf("\n");
+		state->lvl--;
+	}
 
 	/* not sure how much of the rest of contents before start of fs_info
 	 * is the header, vs other things.. just dump it all as unknown for
@@ -400,22 +410,60 @@ static void decode_shader_descriptor_block(struct state *state,
 	state->lvl--;
 }
 
+enum {
+	VS = 0,
+	FS = 1,
+	CS = 2,
+	GS = 3,
+	HS = 4,
+	DS = 5,
+} shader_stage;
+
+#define ENUM(n) [n] = #n
+
+static const char *stage_names[] = {
+	ENUM(VS),
+	ENUM(FS),
+	ENUM(CS),
+	ENUM(GS),
+	ENUM(HS),
+	ENUM(DS),
+};
+
 /* there looks like one of these per shader, followed by "main" and
  * some more info, and then the shader itself.
  */
 struct PACKED shader_info {
-	uint32_t unk_0000_0010[5];
+	UNKNOWN(0000, 0004);
+	uint32_t stage;
+	UNKNOWN(000c, 0010);
 	uint32_t desc_off;       /* offset to first descriptor block */
 	uint32_t num_blocks;
 };
 
 static void decode_shader_info(struct state *state, struct shader_info *info)
 {
-	assert((info->desc_off % 4) == 0);
 
-	U(info, 0000, 0010);
+	printf("\n%s%s shader\n", tab(state->lvl), stage_names[info->stage]);
+	U(info, 0000, 0004);
+	D(info, stage);
+	U(info, 000c, 0010);
 	X(info, desc_off);
 	D(info, num_blocks);
+
+	if ((info->desc_off % 4) != 0) {
+		printf("%sbad shader_info section!\n", tab(state->lvl));
+		return;
+	}
+
+	if (info->desc_off == 0)
+		return;
+
+	if (info->desc_off < sizeof(*info))
+		return;
+
+	if (info->desc_off > state->sz)
+		return;
 
 	dump_unknown(state, &info[1], 0, (info->desc_off - sizeof(*info))/4);
 
@@ -426,6 +474,7 @@ static void decode_shader_info(struct state *state, struct shader_info *info)
 		printf("%sdescriptor %u:\n", tab(state->lvl), i);
 		state->lvl++;
 		decode_shader_descriptor_block(state, &blocks[i]);
+		printf("\n");
 		state->lvl--;
 	}
 }
