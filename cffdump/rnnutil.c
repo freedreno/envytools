@@ -89,6 +89,11 @@ static void init(struct rnn *rnn, char *file, char *domain)
 		rnndec_varadd(rnn->vc_nocolor, "chip", domain);
 }
 
+void rnn_load_file(struct rnn *rnn, char *file, char *domain)
+{
+	init(rnn, file, domain);
+}
+
 void rnn_load(struct rnn *rnn, const char *gpuname)
 {
 	if (strstr(gpuname, "a2")) {

@@ -51,6 +51,7 @@ union rnndecval {
 
 void _rnn_init(struct rnn *rnn, int nocolor);
 struct rnn *rnn_new(int nocolor);
+void rnn_load_file(struct rnn *rnn, char *file, char *domain);
 void rnn_load(struct rnn *rnn, const char *gpuname);
 uint32_t rnn_regbase(struct rnn *rnn, const char *name);
 const char *rnn_regname(struct rnn *rnn, uint32_t regbase, int color);

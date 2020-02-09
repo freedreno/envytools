@@ -22,3 +22,6 @@ target_link_libraries(pgmdump util rnn ${LIBARCHIVE_LIBRARIES})
 
 add_executable(pgmdump2 pgmdump2.c)
 target_link_libraries(pgmdump2 util rnn ${LIBARCHIVE_LIBRARIES})
+
+add_executable(crashdec crashdec.c)
+target_link_libraries(crashdec util rnn)
