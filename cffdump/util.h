@@ -33,6 +33,12 @@
 #  define ASCII_XOR 0
 #endif
 
+static inline const char *tab(int lvl)
+{
+	const char *TAB = "\t\t\t\t\t\t\t\t\0";
+	return &TAB[strlen(TAB) - lvl];
+}
+
 /* convert float to dword */
 static inline float d2f(uint32_t d)
 {
@@ -141,20 +147,24 @@ dump_ascii(void *buf, int sz)
 }
 
 static inline void
-dump_hex_ascii(void *buf, int sz)
+dump_hex_ascii(void *buf, int sz, int level)
 {
 	uint8_t *ptr = (uint8_t *)buf;
 	uint8_t *end = ptr + sz;
 	uint8_t *ascii = ptr;
 	int i = 0;
 
-	printf("-----------------------------------------------\n");
-	printf("%d (0x%x) bytes\n", sz, sz);
+	printf("%s-----------------------------------------------\n", tab(level));
+	printf("%s%d (0x%x) bytes\n", tab(level), sz, sz);
 
 	while (ptr < end) {
 		uint32_t d = 0;
 
-		printf((i % 4) ? " " : "\t");
+		if (i % 4) {
+			printf(" ");
+		} else {
+			printf("%s", tab(level));
+		}
 
 		d |= *(ptr++) <<  0;
 		d |= *(ptr++) <<  8;
@@ -177,7 +187,10 @@ dump_hex_ascii(void *buf, int sz)
 		i++;
 	}
 
-	if (i % 8) {
+	if (i % 4) {
+		for (int j = 4 - (i % 4); j > 0; j--) {
+			printf("         ");
+		}
 		printf("\t|");
 		while (ascii < end) {
 			uint8_t c = *(ascii++);
@@ -186,12 +199,6 @@ dump_hex_ascii(void *buf, int sz)
 		}
 		printf("|\n");
 	}
-}
-
-static inline const char *tab(int lvl)
-{
-	const char *TAB = "\t\t\t\t\t";
-	return &TAB[strlen(TAB) - lvl];
 }
 
 #endif /* __UTIL_H__ */

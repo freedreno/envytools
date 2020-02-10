@@ -550,7 +550,7 @@ printf("hdr_size=%d\n", hdr_size);
 					instrs_size = sect_size;
 					break;
 				}
-				dump_hex_ascii(ptr, sect_size);
+				dump_hex_ascii(ptr, sect_size, 0);
 				constants[nconsts++] = ptr;
 			}
 		}
@@ -629,7 +629,7 @@ printf("hdr_size=%d\n", hdr_size);
 					break;
 				}
 
-				dump_hex_ascii(ptr, sect_size);
+				dump_hex_ascii(ptr, sect_size, 0);
 				constants[nconsts++] = ptr;
 			}
 		}
@@ -694,7 +694,7 @@ static void dump_program(struct state *state)
 	 */
 	ptr = next_sect(state, &sect_size);
 	if (full_dump) {
-		dump_hex_ascii(ptr, sect_size);
+		dump_hex_ascii(ptr, sect_size, 0);
 	}
 
 	for (i = 0; (i < state->hdr->num_attribs) && (state->sz > 0); i++) {
@@ -704,7 +704,7 @@ static void dump_program(struct state *state)
 		 * extra sections that don't seem useful, so skip these:
 		 */
 		while (!valid_type(state->attribs[i]->type_info)) {
-			dump_hex_ascii(state->attribs[i], sect_size);
+			dump_hex_ascii(state->attribs[i], sect_size, 0);
 			state->attribs[i] = next_sect(state, &sect_size);
 		}
 
@@ -723,7 +723,7 @@ static void dump_program(struct state *state)
 		 * extra sections that don't seem useful, so skip these:
 		 */
 		while (!valid_type(state->uniforms[i]->type_info)) {
-			dump_hex_ascii(state->uniforms[i], sect_size);
+			dump_hex_ascii(state->uniforms[i], sect_size, 0);
 			state->uniforms[i] = next_sect(state, &sect_size);
 		}
 
@@ -747,7 +747,7 @@ static void dump_program(struct state *state)
 		 * extra sections that don't seem useful, so skip these:
 		 */
 		while (!valid_type(state->samplers[i]->type_info)) {
-			dump_hex_ascii(state->samplers[i], sect_size);
+			dump_hex_ascii(state->samplers[i], sect_size, 0);
 			state->samplers[i] = next_sect(state, &sect_size);
 		}
 
@@ -765,7 +765,7 @@ static void dump_program(struct state *state)
 	if (state->hdr->revision >= 7) {
 		for (i = 0; (i < state->hdr->num_samplers) && (state->sz > 0); i++) {
 			ptr = next_sect(state, &sect_size);
-			dump_hex_ascii(ptr, sect_size);
+			dump_hex_ascii(ptr, sect_size, 0);
 		}
 	}
 
@@ -777,7 +777,7 @@ static void dump_program(struct state *state)
 		 * extra sections that don't seem useful, so skip these:
 		 */
 		while (!valid_type(state->varyings[i]->type_info)) {
-			dump_hex_ascii(state->varyings[i], sect_size);
+			dump_hex_ascii(state->varyings[i], sect_size, 0);
 			state->varyings[i] = next_sect(state, &sect_size);
 		}
 
@@ -793,7 +793,7 @@ static void dump_program(struct state *state)
 	if (state->hdr->revision >= 14) {
 		for (i = 0; (i < state->hdr->num_varyings) && (state->sz > 0); i++) {
 			ptr = next_sect(state, &sect_size);
-			dump_hex_ascii(ptr, sect_size);
+			dump_hex_ascii(ptr, sect_size, 0);
 		}
 	}
 
