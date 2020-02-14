@@ -46,10 +46,12 @@ void script_start_cmdstream(const char *name);
 /* called at each DRAW_INDX, calls script drawidx fxn to process
  * the current state
  */
+__attribute__((weak))
 void script_draw(const char *primtype, uint32_t nindx);
 
 struct rnn;
 struct rnndomain;
+__attribute__((weak))
 void script_packet(uint32_t *dwords, uint32_t sizedwords,
 		struct rnn *rnn, struct rnndomain *dom);
 
