@@ -43,6 +43,7 @@
 #include "io.h"
 #include "rnnutil.h"
 #include "pager.h"
+#include "buffers.h"
 
 /* ************************************************************************* */
 /* originally based on kernel recovery dump code: */
@@ -196,68 +197,6 @@ static void dump_tex_samp(uint32_t *texsamp, int num_unit, int level);
 static void dump_tex_const(uint32_t *texsamp, int num_unit, int level);
 static const char *regname(uint32_t regbase, int color);
 static uint32_t regbase(const char *name);
-
-struct buffer {
-	void *hostptr;
-	unsigned int len;
-	uint64_t gpuaddr;
-};
-
-static struct buffer buffers[512];
-static int nbuffers;
-
-static int buffer_contains_gpuaddr(struct buffer *buf, uint64_t gpuaddr, uint32_t len)
-{
-	return (buf->gpuaddr <= gpuaddr) && (gpuaddr < (buf->gpuaddr + buf->len));
-}
-
-static int buffer_contains_hostptr(struct buffer *buf, void *hostptr)
-{
-	return (buf->hostptr <= hostptr) && (hostptr < (buf->hostptr + buf->len));
-}
-
-
-static uint64_t gpuaddr(void *hostptr)
-{
-	int i;
-	for (i = 0; i < nbuffers; i++)
-		if (buffer_contains_hostptr(&buffers[i], hostptr))
-			return buffers[i].gpuaddr + (hostptr - buffers[i].hostptr);
-	return 0;
-}
-
-uint64_t gpubaseaddr(uint64_t gpuaddr)
-{
-	int i;
-	if (!gpuaddr)
-		return 0;
-	for (i = 0; i < nbuffers; i++)
-		if (buffer_contains_gpuaddr(&buffers[i], gpuaddr, 0))
-			return buffers[i].gpuaddr;
-	return 0;
-}
-
-static void *hostptr(uint64_t gpuaddr)
-{
-	int i;
-	if (!gpuaddr)
-		return 0;
-	for (i = 0; i < nbuffers; i++)
-		if (buffer_contains_gpuaddr(&buffers[i], gpuaddr, 0))
-			return buffers[i].hostptr + (gpuaddr - buffers[i].gpuaddr);
-	return 0;
-}
-
-unsigned hostlen(uint64_t gpuaddr)
-{
-	int i;
-	if (!gpuaddr)
-		return 0;
-	for (i = 0; i < nbuffers; i++)
-		if (buffer_contains_gpuaddr(&buffers[i], gpuaddr, 0))
-			return buffers[i].len + buffers[i].gpuaddr - gpuaddr;
-	return 0;
-}
 
 static void dump_hex(uint32_t *dwords, uint32_t sizedwords, int level)
 {
@@ -2720,7 +2659,7 @@ static int handle_file(const char *filename, int start, int end, int draw)
 	void *buf = NULL;
 	struct io *io;
 	int submit = 0, got_gpu_id = 0;
-	int sz, i, ret = 0;
+	int sz, ret = 0;
 	bool needs_reset = false;
 	bool skip = false;
 
@@ -2791,7 +2730,10 @@ static int handle_file(const char *filename, int start, int end, int draw)
 		return 0;
 	}
 
-	struct buffer gpuaddr = {0};
+	struct {
+		unsigned int len;
+		uint64_t gpuaddr;
+	} gpuaddr = {0};
 
 	while (true) {
 		uint32_t arr[2];
@@ -2847,33 +2789,13 @@ static int handle_file(const char *filename, int start, int end, int draw)
 			break;
 		case RD_GPUADDR:
 			if (needs_reset) {
-				for (i = 0; i < nbuffers; i++) {
-					free(buffers[i].hostptr);
-					buffers[i].hostptr = NULL;
-					buffers[i].len = 0;
-				}
-				nbuffers = 0;
+				reset_buffers();
 				needs_reset = false;
 			}
 			parse_addr(buf, sz, &gpuaddr.len, &gpuaddr.gpuaddr);
 			break;
 		case RD_BUFFER_CONTENTS:
-			for (i = 0; i < nbuffers; i++) {
-				if (buffers[i].gpuaddr == gpuaddr.gpuaddr)
-					break;
-			}
-			if (i == nbuffers) {
-				/* some traces, like test-perf, with some blob versions,
-				 * seem to generate an unreasonable # of gpu buffers (a
-				 * leak?), so just ignore them.
-				 */
-				if (nbuffers >= ARRAY_SIZE(buffers))
-					break;
-				nbuffers++;
-			}
-			buffers[i].hostptr = buf;
-			buffers[i].len     = gpuaddr.len;
-			buffers[i].gpuaddr = gpuaddr.gpuaddr;
+			add_buffer(gpuaddr.gpuaddr, gpuaddr.len, buf);
 			buf = NULL;
 			break;
 		case RD_CMDSTREAM_ADDR:

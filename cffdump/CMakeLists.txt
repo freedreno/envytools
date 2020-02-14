@@ -12,7 +12,7 @@ pkg_check_modules(LIBARCHIVE REQUIRED libarchive)
 
 include_directories(${LUA_INCLUDE_DIRS} ${LIBARCHIVE_INCLUDE_DIRS})
 
-add_library(util disasm-a2xx.c disasm-a3xx.c io.c rnnutil.c pager.c)
+add_library(util disasm-a2xx.c disasm-a3xx.c io.c rnnutil.c pager.c buffers.c)
 
 add_executable(cffdump cffdump.c script.c)
 target_link_libraries(cffdump util rnn ${LUA_LIBRARIES} ${LIBARCHIVE_LIBRARIES})
