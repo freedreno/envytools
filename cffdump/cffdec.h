@@ -38,6 +38,15 @@ struct cffdec_options {
 	char *script;
 	char **querystrs;
 	int nquery;
+
+	/* for crashdec, where we know CP_IBx_REM_SIZE, we can use this
+	 * to highlight the cmdstream not parsed yet, to make it easier
+	 * to see how far along the CP is.
+	 */
+	struct {
+		uint64_t base;
+		uint32_t rem;
+	} ibs[3];
 };
 
 void printl(int lvl, const char *fmt, ...);

@@ -74,6 +74,10 @@ static int is_64b(void)
  * of IB or if it is restricted to just have register writes:
  */
 static int draws[3];
+static struct {
+	uint64_t base;
+	uint32_t size;   /* in dwords */
+} ibs[3];
 static int ib;
 
 static int draw_count;
@@ -130,6 +134,24 @@ static void dump_tex_samp(uint32_t *texsamp, int num_unit, int level);
 static void dump_tex_const(uint32_t *texsamp, int num_unit, int level);
 static const char *regname(uint32_t regbase, int color);
 
+static bool
+highlight_gpuaddr(uint64_t gpuaddr)
+{
+	if (!options->color)
+		return false;
+
+	if (!options->ibs[ib].base)
+		return false;
+
+	if (options->ibs[ib].base != ibs[ib].base)
+		return false;
+
+	uint64_t start = ibs[ib].base + 4 * (ibs[ib].size - options->ibs[ib].rem);
+	uint64_t end   = ibs[ib].base + 4 * ibs[ib].size;
+
+	return (start <= gpuaddr) && (gpuaddr <= end);
+}
+
 static void
 dump_hex(uint32_t *dwords, uint32_t sizedwords, int level)
 {
@@ -158,11 +180,20 @@ dump_hex(uint32_t *dwords, uint32_t sizedwords, int level)
 		if (zero)
 			continue;
 
+		uint64_t addr = gpuaddr(&dwords[i]);
+		bool highlight = highlight_gpuaddr(addr);
+
+		if (highlight)
+			printf("\x1b[0;1;31m");
+
 		if (is_64b()) {
-			printf("%016lx:%s", gpuaddr(&dwords[i]), levels[level]);
+			printf("%016lx:%s", addr, levels[level]);
 		} else {
-			printf("%08x:%s", (uint32_t)gpuaddr(&dwords[i]), levels[level]);
+			printf("%08x:%s", (uint32_t)addr, levels[level]);
 		}
+
+		if (highlight)
+			printf("\x1b[0m");
 
 		printf("%04x:", i * 4);
 
@@ -1841,6 +1872,13 @@ cp_indirect(uint32_t *dwords, uint32_t sizedwords, int level)
 
 	if (ptr) {
 		ib++;
+		ibs[ib].base = ibaddr;
+		ibs[ib].size = ibsize;
+
+		uint64_t start = ibs[ib].base + 4 * (ibs[ib].size - options->ibs[ib].rem);
+		uint64_t end   = ibs[ib].base + 4 * ibs[ib].size;
+		printf("range: %llx..%llx\n", start, end);
+
 		dump_commands(ptr, ibsize, level);
 		ib--;
 	} else {
