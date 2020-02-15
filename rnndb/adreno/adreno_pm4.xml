@@ -833,7 +833,7 @@ opcode: CP_LOAD_STATE4 (30) (4 dwords)
 		<bitfield name="BIN_DATA_ADDR2_LO" low="0" high="31"/>
 	</reg32>
 	<reg32 offset="6" name="6">
-		<bitfield name="BIN_DATA_ADDR2_LO" low="0" high="31"/>
+		<bitfield name="BIN_DATA_ADDR2_HI" low="0" high="31"/>
 	</reg32>
 </domain>
 
@@ -1400,8 +1400,9 @@ opcode: CP_LOAD_STATE4 (30) (4 dwords)
 		<value value="0x101" name="RM6_IFPC_DISABLE"/>
 	</enum>
 	<reg32 offset="0" name="0">
-		<bitfield name="MARKER" low="0" high="3"/>
-		<bitfield name="MODE" low="0" high="8" type="a6xx_render_mode"/>
+		<bitfield name="MODE" low="0" high="3" type="a6xx_render_mode"/>
+		<!-- IFPC - inter-frame power collapse -->
+		<bitfield name="IFPC" pos="8" type="boolean"/>
 	</reg32>
 </domain>
 
