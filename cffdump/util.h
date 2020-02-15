@@ -163,7 +163,7 @@ dump_hex_ascii(void *buf, int sz, int level)
 		if (i % 4) {
 			printf(" ");
 		} else {
-			printf("%s", tab(level));
+			printf("%s%06x: ", tab(level), (uint32_t)(ptr - (uint8_t *)buf));
 		}
 
 		d |= *(ptr++) <<  0;
