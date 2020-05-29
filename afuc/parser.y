@@ -128,7 +128,7 @@ static void print_token(FILE *file, int type, YYSTYPE value)
 
 %token <num> T_INT
 %token <num> T_HEX
-%token <num> T_CONFIG_REG
+%token <num> T_CONTROL_REG
 %token <str> T_LABEL_DECL
 %token <str> T_LABEL_REF
 %token <num> T_LITERAL
@@ -256,5 +256,6 @@ reg:               T_REGISTER
 
 immediate:         T_HEX
 |                  T_INT
-|                  T_CONFIG_REG
+|                  T_CONTROL_REG
+|                  T_CONTROL_REG '+' immediate { $$ = $1 + $3; }
 

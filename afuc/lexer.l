@@ -43,7 +43,7 @@ extern YYSTYPE yylval;
 "$"[0-9a-fA-F][0-9a-fA-F]         yylval.num = parse_reg(yytext); return T_REGISTER;
 "$"[a-zA-Z][a-zA-Z0-9]*           yylval.num = parse_reg(yytext); return T_REGISTER;
 "b"[0-9][0-9]*                    yylval.num = parse_bit(yytext); return T_BIT;
-"@"[a-zA-Z_][a-zA-Z0-9_]*         yylval.num = parse_config_reg(yytext); return T_CONFIG_REG;
+"@"[a-zA-Z_][a-zA-Z0-9_]*         yylval.num = parse_control_reg(yytext); return T_CONTROL_REG;
 "#"[a-zA-Z_][a-zA-Z0-9_]*         yylval.str = strdup(yytext+1);  return T_LABEL_REF; /* label reference */
 [a-zA-Z_][a-zA-Z0-9_]*":"         yylval.str = parse_label_decl(yytext); return T_LABEL_DECL; /* label declaration */
 "["[0-9a-fA-F][0-9a-fA-F]*"]"     yylval.num = parse_literal(yytext); return T_LITERAL;

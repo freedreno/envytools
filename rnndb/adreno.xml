@@ -11,6 +11,6 @@ xsi:schemaLocation="http://nouveau.freedesktop.org/ rules-ng.xsd">
 <import file="adreno/a6xx.xml"/>
 <import file="adreno/a6xx_gmu.xml"/>
 <import file="adreno/ocmem.xml"/>
-<import file="adreno/adreno_config_regs.xml"/>
+<import file="adreno/adreno_control_regs.xml"/>
 
 </database>

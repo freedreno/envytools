@@ -110,7 +110,7 @@ parse_bit(const char *str)
 	return strtol(str + 1, NULL, 10);
 }
 
-unsigned parse_config_reg(const char *name);
+unsigned parse_control_reg(const char *name);
 
 /* string trailing ':' off label: */
 static inline const char *

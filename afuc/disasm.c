@@ -41,7 +41,7 @@ static int gpuver;
 
 static struct rnndeccontext *ctx;
 static struct rnndb *db;
-static struct rnnenum *config_regs;
+static struct rnndomain *control_regs;
 struct rnndomain *dom[2];
 const char *variant;
 
@@ -295,16 +295,16 @@ fxn_name(uint32_t offset)
 	return name;
 }
 
-static char *get_config_reg(uint32_t id)
+static void print_control_reg(uint32_t id)
 {
-	int i;
-	for (i = 0; i < config_regs->valsnum; i++) {
-		if (config_regs->vals[i]->valvalid &&
-		    config_regs->vals[i]->value == id) {
-			return config_regs->vals[i]->name;
-		}
+	if (rnndec_checkaddr(ctx, control_regs, id, 0)) {
+		struct rnndecaddrinfo *info = rnndec_decodeaddr(ctx, control_regs, id, 0);
+		printf("@%s", info->name);
+		free(info->name);
+		free(info);
+	} else {
+		printf("0x%03x", id);
 	}
-	return NULL;
 }
 
 static void disasm(uint32_t *buf, int sizedwords)
@@ -586,9 +586,8 @@ static void disasm(uint32_t *buf, int sizedwords)
 			printf(", [");
 			print_src(instr->control.src2);
 			printf(" + ");
-			const char *name = get_config_reg(instr->control.uimm);
-			if (name && is_control_reg && instr->control.flags != 0x4)
-				printf("@%s", name);
+			if (is_control_reg && instr->control.flags != 0x4)
+				print_control_reg(instr->control.uimm);
 			else
 				printf("0x%03x", instr->control.uimm);
 			printf("], 0x%x", instr->control.flags);
@@ -754,7 +753,7 @@ static void usage(void)
 int main(int argc, char **argv)
 {
 	uint32_t *buf;
-	char *file, *config_reg_name;
+	char *file, *control_reg_name;
 	bool colors = false;
 	int sz, c;
 
@@ -795,12 +794,12 @@ int main(int argc, char **argv)
 	case 6:
 		printf("; a6xx microcode\n");
 		variant = "A6XX";
-		config_reg_name = "a6xx_config_reg";
+		control_reg_name = "A6XX_CONTROL_REG";
 		break;
 	case 5:
 		printf("; a5xx microcode\n");
 		variant = "A5XX";
-		config_reg_name = "a5xx_config_reg";
+		control_reg_name = "A5XX_CONTROL_REG";
 		break;
 	default:
 		fprintf(stderr, "unknown GPU version!\n");
@@ -816,7 +815,7 @@ int main(int argc, char **argv)
 	rnn_parsefile(db, "adreno.xml");
 	dom[0] = rnn_finddomain(db, variant);
 	dom[1] = rnn_finddomain(db, "AXXX");
-	config_regs = rnn_findenum(db, config_reg_name);
+	control_regs = rnn_finddomain(db, control_reg_name);
 
 	buf = (uint32_t *)readfile(file, &sz);
 
