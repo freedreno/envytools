@@ -60,12 +60,14 @@ static FILE *in;
 static bool verbose;
 
 static struct rnn *rnn_gmu;
+static struct rnn *rnn_control;
 
 static struct cffdec_options options = {
 	.draw_filter = -1,
 };
 
 static inline bool is_a6xx(void) { return (600 <= options.gpu_id) && (options.gpu_id < 700); }
+static inline bool is_a5xx(void) { return (500 <= options.gpu_id) && (options.gpu_id < 600); }
 static inline bool is_64b(void)  { return options.gpu_id >= 500; }
 
 /*
@@ -373,11 +375,11 @@ decode_bos(void)
  */
 
 static void
-dump_gmu_register(uint32_t offset, uint32_t value)
+dump_register(struct rnn *rnn, uint32_t offset, uint32_t value)
 {
-	struct rnndecaddrinfo *info = rnn_reginfo(rnn_gmu, offset);
+	struct rnndecaddrinfo *info = rnn_reginfo(rnn, offset);
 	if (info && info->typeinfo) {
-		char *decoded = rnndec_decodeval(rnn_gmu->vc, info->typeinfo, value, info->width);
+		char *decoded = rnndec_decodeval(rnn->vc, info->typeinfo, value, info->width);
 		printf("%s: %s\n", info->name, decoded);
 	} else if (info) {
 		printf("%s: %08x\n", info->name, value);
@@ -394,7 +396,7 @@ decode_gmu_registers(void)
 		parseline(line, "  - { offset: %x, value: %x }", &offset, &value);
 
 		printf("\t%08x\t", value);
-		dump_gmu_register(offset/4, value);
+		dump_register(rnn_gmu, offset/4, value);
 	}
 }
 
@@ -459,6 +461,66 @@ dump_cp_seq_stat(uint32_t *stat)
 }
 
 static void
+dump_control_regs(uint32_t *regs)
+{
+	if (!rnn_control)
+		return;
+
+	/* Control regs 0x100-0x17f are a scratch space to be used by the
+	 * firmware however it wants, unlike lower regs which involve some
+	 * fixed-function units. Therefore only these registers get dumped
+	 * directly.
+	 */
+	for (uint32_t i = 0; i < 0x80; i++) {
+		printf("\t%08x\t", regs[i]);
+		dump_register(rnn_control, i + 0x100, regs[i]);
+	}
+}
+
+static void
+dump_cp_ucode_dbg(uint32_t *dbg)
+{
+	/* Notes on the data:
+	 * There seems to be a section every 4096 DWORD's. The sections aren't
+	 * all the same size, so the rest of the 4096 DWORD's are filled with
+	 * mirrors of the actual data.
+	 */
+
+	for (int section = 0; section < 6; section++, dbg += 0x1000) {
+		switch (section) {
+		case 0:
+			/* Contains scattered data from a630_sqe.fw: */
+			printf("\tSQE instruction cache:\n");
+			dump_hex_ascii(dbg, 4 * 0x400, 1);
+			break;
+		case 1:
+			printf("\tUnknown 1:\n");
+			dump_hex_ascii(dbg, 4 * 0x80, 1);
+			break;
+		case 2:
+			printf("\tUnknown 2:\n");
+			dump_hex_ascii(dbg, 4 * 0x200, 1);
+			break;
+		case 3:
+			printf("\tUnknown 3:\n");
+			dump_hex_ascii(dbg, 4 * 0x80, 1);
+			break;
+		case 4:
+			/* Don't bother printing this normally */
+			if (verbose) {
+				printf("\tSQE packet jumptable contents:\n");
+				dump_hex_ascii(dbg, 4 * 0x80, 1);
+			}
+			break;
+		case 5:
+			printf("\tSQE scratch control regs:\n");
+			dump_control_regs(dbg);
+			break;
+		}
+	}
+}
+
+static void
 decode_indexed_registers(void)
 {
 	char *name = NULL;
@@ -484,6 +546,9 @@ decode_indexed_registers(void)
 
 			if (!strcmp(name, "CP_SEQ_STAT"))
 				dump_cp_seq_stat(buf);
+
+			if (!strcmp(name, "CP_UCODE_DBG_DATA"))
+				dump_cp_ucode_dbg(buf);
 
 			if (dump)
 				dump_hex_ascii(buf, 4 * sizedwords, 1);
@@ -603,6 +668,13 @@ decode(void)
 			if (is_a6xx()) {
 				rnn_gmu = rnn_new(!options.color);
 				rnn_load_file(rnn_gmu, "adreno/a6xx_gmu.xml", "A6XX");
+				rnn_control = rnn_new(!options.color);
+				rnn_load_file(rnn_control, "adreno/adreno_control_regs.xml", "A6XX_CONTROL_REG");
+			} else if (is_a5xx()) {
+				rnn_control = rnn_new(!options.color);
+				rnn_load_file(rnn_control, "adreno/adreno_control_regs.xml", "A5XX_CONTROL_REG");
+			} else {
+				rnn_control = NULL;
 			}
 		} else if (startswith(line, "bos:")) {
 			decode_bos();
