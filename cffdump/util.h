@@ -51,7 +51,7 @@ static inline float d2f(uint32_t d)
 	return u.f;
 }
 
-static inline void dump_hex(void *buf, int sz)
+static inline void dump_hex(const void *buf, int sz)
 {
 	uint8_t *ptr = (uint8_t *)buf;
 	uint8_t *end = ptr + sz;
@@ -82,7 +82,7 @@ static inline void dump_hex(void *buf, int sz)
 }
 
 static inline void
-dump_float(void *buf, int sz)
+dump_float(const void *buf, int sz)
 {
 	uint8_t *ptr = (uint8_t *)buf;
 	uint8_t *end = ptr + sz - 3;
@@ -126,7 +126,7 @@ clean_ascii(char *buf, int sz)
 }
 
 static inline void
-dump_ascii(void *buf, int sz)
+dump_ascii(const void *buf, int sz)
 {
 	uint8_t *ptr = (uint8_t *)buf;
 	uint8_t *end = ptr + sz;
@@ -147,7 +147,7 @@ dump_ascii(void *buf, int sz)
 }
 
 static inline void
-dump_hex_ascii(void *buf, int sz, int level)
+dump_hex_ascii(const void *buf, int sz, int level)
 {
 	uint8_t *ptr = (uint8_t *)buf;
 	uint8_t *end = ptr + sz;
