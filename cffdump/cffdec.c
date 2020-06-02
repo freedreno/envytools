@@ -160,7 +160,6 @@ static void disable_all_groups(void);
 
 static void dump_tex_samp(uint32_t *texsamp, enum state_src_t src, int num_unit, int level);
 static void dump_tex_const(uint32_t *texsamp, int num_unit, int level);
-static const char *regname(uint32_t regbase, int color);
 
 static bool
 highlight_gpuaddr(uint64_t gpuaddr)
@@ -789,7 +788,7 @@ pktname(unsigned opc)
 	return rnn_enumname(rnn, "adreno_pm4_type3_packets", opc);
 }
 
-static const char *
+const char *
 regname(uint32_t regbase, int color)
 {
 	return rnn_regname(rnn, regbase, color);
