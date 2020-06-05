@@ -50,6 +50,18 @@ xsi:schemaLocation="http://nouveau.freedesktop.org/ rules-ng.xsd">
 	<reg32 name="REG_READ_DWORDS" offset="0x026"/>
 	<reg32 name="REG_READ_ADDR" offset="0x027"/>
 
+        <doc>
+                Write to increase WFI_PEND_CTR, decremented by WFI_PEND_DECR
+                pipe register.
+        </doc>
+	<reg32 name="WFI_PEND_INCR" offset="0x030"/>
+	<reg32 name="QUERY_PEND_INCR" offset="0x031"/>
+	<reg32 name="CACHE_FLUSH_PEND_INCR" offset="0x031"/>
+
+	<reg32 name="WFI_PEND_CTR" offset="0x038"/>
+	<reg32 name="QUERY_PEND_CTR" offset="0x039"/>
+	<reg32 name="CACHE_FLUSH_PEND_CTR" offset="0x03a"/>
+
 	<reg32 name="DRAW_STATE_SEL" offset="0x041"/>
 	<reg32 name="DRAW_STATE_ACTIVE_BITMASK" offset="0x049"/>
 	<reg32 name="DRAW_STATE_SET" offset="0x04a"/>

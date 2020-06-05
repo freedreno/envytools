@@ -45,6 +45,10 @@ xsi:schemaLocation="http://nouveau.freedesktop.org/ rules-ng.xsd">
 	<value name="BLIT" value="30" variants="A5XX,A6XX"/>
 	<value name="UNK_25" value="37" variants="A5XX"/>
 	<value name="LRZ_FLUSH" value="38" variants="A5XX,A6XX"/>
+	<value name="BLIT_OP_FILL_2D" value="39" variants="A5XX,A6XX"/>
+	<value name="BLIT_OP_COPY_2D" value="40" variants="A5XX,A6XX"/>
+	<value name="BLIT_OP_SCALE_2D" value="42" variants="A5XX,A6XX"/>
+	<value name="CONTEXT_DONE_2D" value="43" variants="A5XX,A6XX"/>
 	<value name="UNK_2C" value="44" variants="A5XX"/>
 	<value name="UNK_2D" value="45" variants="A5XX"/>
 
