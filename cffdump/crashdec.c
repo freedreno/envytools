@@ -833,7 +833,8 @@ decode_indexed_registers(void)
 			if (!strcmp(name, "CP_UCODE_DBG_DATA"))
 				dump_cp_ucode_dbg(buf);
 
-			if (!strcmp(name, "CP_MEMPOOL"))
+			/* note that name was typo'd in earlier kernels: */
+			if (!strcmp(name, "CP_MEMPOOL") || !strcmp(name, "CP_MEMPOOOL"))
 				dump_cp_mem_pool(buf);
 
 			if (dump)
