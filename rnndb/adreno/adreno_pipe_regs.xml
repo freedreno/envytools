@@ -28,12 +28,16 @@ CP_WAIT_MEM_WRITES:
 	regular register writes in what replaced the MEQ.
 -->
 
+<bitset name="void" inline="yes">
+	<doc>Special type to mark registers with no payload.</doc>
+</bitset>
+
 <domain name="A6XX_PIPE_REG" width="32">
 	<!-- This replaces CP_WFI_PEND_CTR on a3xx-a5xx -->
-	<reg32 name="WFI_PEND_DECR" offset="0x81"/>
+	<reg32 name="WFI_PEND_DECR" offset="0x81" type="void"/>
 	<!-- This is only used for WRITE_PRIMITIVE_COUNTS/ZPASS_DONE events -->
-	<reg32 name="QUERY_PEND_DECR" offset="0x82"/>
-	<reg32 name="WAIT_MEM_WRITES" offset="0x84"/>
+	<reg32 name="QUERY_PEND_DECR" offset="0x82" type="void"/>
+	<reg32 name="WAIT_MEM_WRITES" offset="0x84" type="void"/>
 
 	<!-- Replaces CP_ME_NRT_ADDR/DATA on a3xx-a5xx -->
 	<reg64 name="NRT_ADDR" offset="0xa0"/>
