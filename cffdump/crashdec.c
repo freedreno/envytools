@@ -527,16 +527,12 @@ dump_mem_pool_reg_write(unsigned reg, uint32_t data, unsigned context, bool pipe
 	if (pipe) {
 		struct rnndecaddrinfo *info = rnn_reginfo(rnn_pipe, reg);
 		printf("\t\twrite %s (%02x) pipe\n", info->name, reg);
-		switch (reg) {
-		/* registers that ignore their payload */
-		case 0x81:
-		case 0x82:
-		case 0x84:
-			break;
-		default:
+
+		if (!strcmp(info->typeinfo->name, "void")) {
+			/* registers that ignore their payload */
+		} else {
 			printf("\t\t\t");
 			dump_register(rnn_pipe, reg, data);
-			break;
 		}
 	} else {
 		printf("\t\twrite %s (%05x) context %d\n", regname(reg, 1), reg, context);
