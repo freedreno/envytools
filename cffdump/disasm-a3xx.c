@@ -174,7 +174,7 @@ static void regmask_set(regmask_t *regmask, unsigned num, bool full, unsigned va
 {
 	unsigned i = num / 8;
 	unsigned j = num % 8;
-	assert(num < MAX_REG);
+	ir3_assert(num < MAX_REG);
 	if (full) {
 		regmask->full[i] = (regmask->full[i] & ~(1 << j)) | (val << j);
 	} else {
@@ -186,7 +186,7 @@ static unsigned regmask_get(regmask_t *regmask, unsigned num, bool full)
 {
 	unsigned i = num / 8;
 	unsigned j = num % 8;
-	assert(num < MAX_REG);
+	ir3_assert(num < MAX_REG);
 	if (full) {
 		return (regmask->full[i] >> j) & 0x1;
 	} else {
@@ -1614,7 +1614,7 @@ int disasm_a3xx_stat(uint32_t *dwords, int sizedwords, int level, FILE *out,
 	int nop_count = 0;
 	bool has_end = false;
 
-//	assert((sizedwords % 2) == 0);
+//	ir3_assert((sizedwords % 2) == 0);
 
 	memset(&ctx, 0, sizeof(ctx));
 	ctx.out = out;

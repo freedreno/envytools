@@ -30,6 +30,23 @@
 #include <stdbool.h>
 #include <assert.h>
 
+void ir3_assert_handler(const char *expr, const char *file, int line,
+		const char *func) __attribute__((weak)) __attribute__ ((__noreturn__));
+
+/* A wrapper for assert() that allows overriding handling of a failed
+ * assert.  This is needed for tools like crashdec which can want to
+ * attempt to disassemble memory that might not actually be valid
+ * instructions.
+ */
+#define ir3_assert(expr) do { \
+		if (!(expr)) { \
+			if (ir3_assert_handler) { \
+				ir3_assert_handler(#expr, __FILE__, __LINE__, __func__); \
+			} \
+			assert(expr); \
+		} \
+	} while (0)
+
 /* size of largest OPC field of all the instruction categories: */
 #define NOPC_BITS 6
 
@@ -251,7 +268,7 @@ static inline uint32_t type_size(type_t type)
 	case TYPE_S8:
 		return 8;
 	default:
-		assert(0); /* invalid type */
+		ir3_assert(0); /* invalid type */
 		return 0;
 	}
 }
@@ -958,8 +975,8 @@ static inline bool is_cat6_legacy(instr_t *instr, unsigned gpu_id)
 	 * in all cases.  So we can use this to detect new encoding:
 	 */
 	if ((cat6->pad3 & 0x8) && (cat6->pad5 & 0x2)) {
-		assert(gpu_id >= 600);
-		assert(instr->cat6.opc == 0);
+		ir3_assert(gpu_id >= 600);
+		ir3_assert(instr->cat6.opc == 0);
 		return false;
 	}
 
