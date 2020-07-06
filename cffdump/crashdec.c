@@ -328,6 +328,8 @@ dump_cmdstream(void)
 	for (int id = 0; id < ARRAY_SIZE(ringbuffers); id++) {
 		if (ringbuffers[id].iova != rb_base)
 			continue;
+		if (!ringbuffers[id].size)
+			continue;
 
 		printf("found ring!\n");
 
