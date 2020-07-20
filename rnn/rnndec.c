@@ -45,7 +45,7 @@ int rnndec_varadd(struct rnndeccontext *ctx, char *varset, char *variant) {
 		fprintf (stderr, "Enum %s doesn't exist in database!\n", varset);
 		return 0;
 	}
-	int i;
+	int i, j;
 	for (i = 0; i < en->valsnum; i++)
 		if (!strcasecmp(en->vals[i]->name, variant)) {
 			struct rnndecvariant *ci = calloc (sizeof *ci, 1);
@@ -54,8 +54,27 @@ int rnndec_varadd(struct rnndeccontext *ctx, char *varset, char *variant) {
 			ADDARRAY(ctx->vars, ci);
 			return 1;
 		}
-	fprintf (stderr, "Variant %s doesn't exist in enum %s!\n", variant, varset);
-	return 0;
+
+	if (i == en->valsnum) {
+		fprintf (stderr, "Variant %s doesn't exist in enum %s!\n", variant, varset);
+		return 0;
+	}
+
+	for (j = 0; j < ctx->varsnum; j++) {
+		if (ctx->vars[j]->en == en) {
+			ctx->vars[j]->variant = i;
+			break;
+		}
+	}
+
+	if (i == ctx->varsnum) {
+		struct rnndecvariant *ci = calloc (sizeof *ci, 1);
+		ci->en = en;
+		ci->variant = i;
+		ADDARRAY(ctx->vars, ci);
+	}
+
+	return 1;
 }
 
 int rnndec_varmatch(struct rnndeccontext *ctx, struct rnnvarinfo *vi) {
@@ -159,6 +178,9 @@ char *rnndec_decodeval(struct rnndeccontext *ctx, struct rnntypeinfo *ti, uint64
 			tmp = rnndec_decode_enum_val(ctx, vals, valsnum, value);
 			if (tmp) {
 				asprintf (&res, "%s%s%s", ctx->colors->eval, tmp, ctx->colors->reset);
+				if (ti->addvariant) {
+					rnndec_varadd(ctx, ti->eenum->name, tmp);
+				}
 				break;
 			}
 			goto failhex;

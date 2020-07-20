@@ -198,6 +198,8 @@ static int trytypeattr (struct rnndb *db, char *file, xmlNode *node, xmlAttr *at
 	} else if (!strcmp(attr->name, "high")) {
 		ti->high = getnumattrib(db, file, node->line, attr);
 		return 1;
+	} else if (!strcmp(attr->name, "addvariant")) {
+		ti->addvariant = getboolattrib(db, file, node->line, attr);
 	}
 	return 0;
 }
@@ -943,6 +945,7 @@ static void copytypeinfo (struct rnntypeinfo *dst, struct rnntypeinfo *src, char
 	dst->min = src->min;
 	dst->max = src->max;
 	dst->align = src->align;
+	dst->addvariant = src->addvariant;
 	for (i = 0; i < src->valsnum; i++)
 		ADDARRAY(dst->vals, copyvalue(src->vals[i], file));
 	for (i = 0; i < src->bitfieldsnum; i++)
@@ -1186,6 +1189,10 @@ static void preptypeinfo(struct rnndb *db, struct rnntypeinfo *ti, char *prefix,
 	} else {
 		ti->name = "hex";
 		ti->type = RNN_TTYPE_HEX;
+	}
+	if (ti->addvariant && ti->type != RNN_TTYPE_ENUM) {
+		fprintf (stderr, "%s: addvariant specified on non-enum type %s\n", prefix, ti->name);
+		db->estatus = 1;
 	}
 	for (i = 0; i < ti->bitfieldsnum; i++)
 		prepbitfield(db,  ti->bitfields[i], prefix, vi);
