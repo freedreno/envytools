@@ -920,7 +920,21 @@ dump_domain(uint32_t *dwords, uint32_t sizedwords, int level,
 		if (!(info && info->typeinfo))
 			break;
 		decoded = rnndec_decodeval(rnn->vc, info->typeinfo, dwords[i]);
-		printf("%s%s\n", levels[level], decoded);
+		/* Unlike the register printing path, we don't print the name
+		 * of the register, so if it doesn't contain other named
+		 * things (i.e. it isn't a bitset) then print the register
+		 * name as if it's a bitset with a single entry. This avoids
+		 * having to create a dummy register with a single entry to
+		 * get a name in the decoding.
+		 */
+		if (info->typeinfo->type == RNN_TTYPE_BITSET ||
+		    info->typeinfo->type == RNN_TTYPE_INLINE_BITSET) {
+			printf("%s%s\n", levels[level], decoded);
+		} else {
+			printf("%s{ %s%s%s = %s }\n", levels[level],
+					rnn->vc->colors->rname, info->name,
+					rnn->vc->colors->reset, decoded);
+		}
 		free(decoded);
 		free(info->name);
 		free(info);
