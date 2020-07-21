@@ -919,7 +919,12 @@ dump_domain(uint32_t *dwords, uint32_t sizedwords, int level,
 		char *decoded;
 		if (!(info && info->typeinfo))
 			break;
-		decoded = rnndec_decodeval(rnn->vc, info->typeinfo, dwords[i]);
+		uint64_t value = dwords[i];
+		if (info->typeinfo->high >= 32 && i < sizedwords - 1) {
+			value |= (uint64_t) dwords[i + 1] << 32;
+			i++; /* skip the next dword since we're printing it now */
+		}
+		decoded = rnndec_decodeval(rnn->vc, info->typeinfo, value);
 		/* Unlike the register printing path, we don't print the name
 		 * of the register, so if it doesn't contain other named
 		 * things (i.e. it isn't a bitset) then print the register
